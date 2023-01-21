@@ -100,6 +100,7 @@ exports.define = async (req, res, next) => {
     const uniEd = req.body.uniEd;
     const genres = req.body.genres;
     const instruments = req.body.instruments;
+    const paths = req.files.map(file => file.path.replace("\\" ,"/"));
     try{
         const user = await User.findById(req.userId);
         user.type = type;
@@ -109,6 +110,9 @@ exports.define = async (req, res, next) => {
         user.uniEd = uniEd;
         user.genres = genres;
         user.instruments = instruments;
+        paths.forEach(path => {
+            user.mediaUrls.push(path);
+        });
         await user.save();
         res.status(201).json({
             message: "User defined successfully!",

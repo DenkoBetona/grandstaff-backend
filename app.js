@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 
 const express = require('express');
 
@@ -66,7 +67,16 @@ app.use((error, req, res, next) => {
     const message = error.message;
     const data = error.data;
     res.status(status).json({ message: message, data: data });
-  });
+});
+
+app.use((req, res, next) => {
+    const paths = req.files.map(file => file.path.replace("\\" ,"/"));
+    paths.forEach(pathE => {
+      filePath = path.join(__dirname, pathE);
+      fs.unlink(filePath, err => console.log(err));
+    });
+    next();
+});
 
 mongoose
   .connect(

@@ -12,4 +12,5 @@ router.put('/addMedia', isAuth, mediaController.addMedia);
 router.delete('/removeMedia/:fileNameExt', isAuth, mediaController.removeMedia);
 
 router.get('/getMedia', isAuth, mediaController.getMedia);
+
 module.exports = router;
