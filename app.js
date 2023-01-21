@@ -7,6 +7,9 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 
 const authRoutes = require('./routes/auth');
+const bandRoutes = require('./routes/band');
+const scheduleRoutes = require('./routes/schedule');
+const mediaRoutes = require('./routes/media');
 
 const app = express();
 
@@ -17,12 +20,13 @@ const storage = multer.diskStorage({
         cb(null, 'images');
     },
     filename: function(req, file, cb) {
-        cb(null, uuidv4())
+        cb(null, uuidv4() + path.extname(file.originalname));
     }
 });
 
 const fileFilter = (req, file, cb) => {
   if (
+    file.mimetype === 'video/mp4' ||
     file.mimetype === 'image/png' ||
     file.mimetype === 'image/jpg' ||
     file.mimetype === 'image/jpeg'
@@ -36,7 +40,7 @@ const fileFilter = (req, file, cb) => {
 app.use(express.json()); // application/json
 
 app.use(
-  multer({ storage: storage, fileFilter: fileFilter }).single('image')
+  multer({ storage: storage, fileFilter: fileFilter }).any()
 );
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
@@ -52,6 +56,9 @@ app.use((req, res, next) => {
 });
 
 app.use('/', authRoutes);
+app.use('/band', bandRoutes);
+app.use('/schedule', scheduleRoutes);
+app.use('/media', mediaRoutes);
 
 app.use((error, req, res, next) => {
     console.log(error);
