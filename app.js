@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const bandRoutes = require('./routes/band');
 const scheduleRoutes = require('./routes/schedule');
 const mediaRoutes = require('./routes/media');
+const messagesRoutes = require('./routes/message');
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use('/', authRoutes);
 app.use('/band', bandRoutes);
 app.use('/schedule', scheduleRoutes);
 app.use('/media', mediaRoutes);
+app.use('/messages/', messagesRoutes);
 
 app.use((error, req, res, next) => {
     console.log(error);
@@ -70,7 +72,8 @@ app.use((error, req, res, next) => {
 });
 
 app.use((req, res, next) => {
-    const paths = req.files.map(file => file.path.replace("\\" ,"/"));
+  let paths = [];  
+  if (req.files) paths = req.files.map(file => file.path.replace("\\" ,"/"));
     paths.forEach(pathE => {
       filePath = path.join(__dirname, pathE);
       fs.unlink(filePath, err => console.log(err));

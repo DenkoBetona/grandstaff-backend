@@ -100,7 +100,8 @@ exports.define = async (req, res, next) => {
     const uniEd = req.body.uniEd;
     const genres = req.body.genres;
     const instruments = req.body.instruments;
-    const paths = req.files.map(file => file.path.replace("\\" ,"/"));
+    let paths = [];
+    if (req.files) paths = req.files.map(file => file.path.replace("\\" ,"/"));
     try{
         const user = await User.findById(req.userId);
         user.type = type;
@@ -125,4 +126,65 @@ exports.define = async (req, res, next) => {
         next(err);
     }
 
+}
+
+exports.find = async (req, res, next) => {
+    const region = req.query.region;
+    const instrument = req.query.instrument;
+    try {
+        let users = await User.find();
+        let passQuery;
+        let queryUsers = [];
+        users.forEach(user => {
+            console.log(user);
+            passQuery = true;
+            if (region) {
+                if (Array.isArray(region)) {
+                    if (!region.includes(user.city)) {
+                        console.log('failed region is array query');
+                        passQuery = false;
+                    }
+                }
+                if (!Array.isArray(region)) {
+                    if (user.city !== region) {
+                        console.log('failed region is not array query');
+                        passQuery = false;
+                    }
+                }
+            }
+            if (instrument) {
+                if (!Array.isArray(instrument)) {
+                    if (!user.instruments.includes(instrument)) {
+                        console.log('failed instrument is not array query');
+                        passQuery = false;
+                    }
+                }
+                if (Array.isArray(instrument)) {
+                    let commonElement = false;
+                    instrument.forEach(inst => {
+                        user.instruments.forEach(uInst => {
+                            console.log(inst);
+                            console.log(uInst);
+                            if (uInst === inst) commonElement = true;
+                        });
+                    });
+                    if (!commonElement) {
+                        console.log('failed instrument is array query');
+                        passQuery = false;
+                    }
+                }
+            }
+            if (passQuery) queryUsers.push(user);
+        });
+        res.status(201).json({
+            region: region,
+            instrument: instrument,
+            queryUsers: queryUsers
+        });
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
 }

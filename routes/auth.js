@@ -41,4 +41,6 @@ router.post('/login', authController.login);
 
 router.patch('/define', isAuth, authController.define);
 
+router.get('/find', authController.find);
+
 module.exports = router;

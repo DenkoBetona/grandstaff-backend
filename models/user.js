@@ -54,7 +54,13 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Schedule'
     },
-    mediaUrls: [String]
+    mediaUrls: [String],
+    messages: [ 
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Message'
+        }
+    ]
 });
 
 module.exports = mongoose.model('User', userSchema);
