@@ -55,6 +55,10 @@ const userSchema = new Schema({
         ref: 'Schedule'
     },
     mediaUrls: [String],
+    pfpUrl: {
+        type: String,
+        default: 'images/pfp.png'
+    },
     messages: [ 
         {
             type: Schema.Types.ObjectId,

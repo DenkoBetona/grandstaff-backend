@@ -12,6 +12,7 @@ const bandRoutes = require('./routes/band');
 const scheduleRoutes = require('./routes/schedule');
 const mediaRoutes = require('./routes/media');
 const messagesRoutes = require('./routes/message');
+const feedRoutes = require('./routes/feed');
 
 const app = express();
 
@@ -22,7 +23,9 @@ const storage = multer.diskStorage({
         cb(null, 'images');
     },
     filename: function(req, file, cb) {
-        cb(null, uuidv4() + path.extname(file.originalname));
+        if (file.fieldname === 'pfpPicker')
+          cb(null, 'pfp' + uuidv4() + path.extname(file.originalname));
+        else cb(null, uuidv4() + path.extname(file.originalname));
     }
 });
 
@@ -62,6 +65,7 @@ app.use('/band', bandRoutes);
 app.use('/schedule', scheduleRoutes);
 app.use('/media', mediaRoutes);
 app.use('/messages/', messagesRoutes);
+app.use('/feed', feedRoutes);
 
 app.use((error, req, res, next) => {
     console.log(error);

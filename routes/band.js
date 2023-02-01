@@ -9,6 +9,4 @@ const router = express.Router();
 
 router.put('/createBand', isAuth, bandController.createBand);
 
-router.put('/addMember', isAuth, bandController.addMember);
-
 module.exports = router;

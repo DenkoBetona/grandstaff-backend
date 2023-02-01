@@ -9,4 +9,6 @@ const router = express.Router();
 
 router.put('/sendMessage', isAuth, messageController.sendMessage);
 
+router.get('/getMessagesOf/:userId', isAuth, messageController.getMessagesOf);
+
 module.exports = router;

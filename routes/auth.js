@@ -41,6 +41,8 @@ router.post('/login', authController.login);
 
 router.patch('/define', isAuth, authController.define);
 
-router.get('/find', authController.find);
+router.get('/findMusician', authController.findMusician);
+
+router.get('/getUser/:userId', authController.getUser);
 
 module.exports = router;

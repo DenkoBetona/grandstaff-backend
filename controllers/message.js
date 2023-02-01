@@ -52,3 +52,24 @@ exports.sendMessage = async (req, res, next) => {
         next(err);
     }
 }
+
+exports.getMessagesOf = async (req, res, next) => {
+    const userMe = req.userId;
+    const userYou = req.params.userId;
+    try {
+        const messages = [];
+        messages.push(await Message.find({fromId: userMe, toId: userYou}));
+        messages.push(await Message.find({fromId: userYou, toId: userMe}));
+        res.status(200).json({
+            messages: messages
+        });
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            res.status(500).json({
+                error: err
+            });
+        }
+        next(err);
+    }
+}

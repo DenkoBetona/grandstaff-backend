@@ -15,6 +15,11 @@ const bandSchema = new Schema({
         default: "Bulgaria"
     },
     genres: [String],
+    pfpUrl: {
+        type: String,
+        default: "images/pfp.png"
+    },
+    imageUrls: [String],
     members: [
         {
             type: Schema.Types.ObjectId,
