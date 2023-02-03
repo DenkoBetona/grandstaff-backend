@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const bandSchema = new Schema({
+    type: {
+        type: String,
+        default: "Band"
+    },
     name: {
         type: String,
         required: true

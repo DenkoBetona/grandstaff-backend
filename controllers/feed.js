@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 const Feed = require('../models/feed');
+const Band = require('../models/band');
 
 exports.setPref = async (req, res, next) => {
     const pref = req.body.pref;
@@ -84,12 +85,11 @@ exports.serveNext = async (req, res, next) => {
         let me, feed;
         if (req.userId !== '0') {
             me = await User.findById(req.userId);
-            feed = await Feed.find({belongsTo: req.userId});
+            feed = await Feed.findOne({belongsTo: req.userId});
         }
         users.forEach(async user => {
-            if (user.type === 'Undefined' || user.type === 'Enjoyer') return;
-            if (me.type === 'Enjoyer' || user.type === 'Employer') passQuery = false;
             passQuery = true;
+            if (user.type === 'Undefined' || user.type === 'Enjoyer') return;
             if (req.userId === '0') {
                 if (user.type === 'Employer') passQuery = false;
             }
@@ -100,15 +100,16 @@ exports.serveNext = async (req, res, next) => {
                 });
                 if (!tempPass) passQuery = false;
                 if (feed.preference === 'Musicians' && user.type === 'Employer') passQuery = false;
+                if (feed.preference === 'Employers' && user.type === 'Musician') passQuery = false;
                 if (feed.preference === 'Employers') {
                     tempPass = false;
                     me.instruments.forEach(instrument => {
                         if (user.instruments.includes(instrument)) tempPass = true;
                     });
                     if (!tempPass) passQuery = false;
-                    if (user.uniEd !== 'Undefined' && me.uniEd === 'Undefined') queryPass = false;
+                    if (user.uniEd !== 'Undefined' && me.uniEd === 'Undefined') passQuery = false;
                 }
-                if (feed.cities && !feed.cities.contains(user.city)) queryPass = false;
+                if (feed.cities && !feed.cities.includes(user.city)) passQuery = false;
             }
             if (passQuery) queryUsers.push(user);
         });
@@ -122,6 +123,26 @@ exports.serveNext = async (req, res, next) => {
             else uniEdUsers.push(user);
         });
         queryUsers = [];
+        const bands = await Band.find();
+        if (req.userId !== '0') {
+            if (feed.preference !== 'Employers') {
+                bands.forEach(band => {
+                passQuery = true;
+                let tempPass = false;
+                band.genres.forEach(genre => {
+                    if (me.genres.includes(genre)) tempPass = true;
+                });
+                if (!tempPass) passQuery = false;
+                if (feed.cities && !feed.cities.includes(band.city)) passQuery = false;
+                if (passQuery) uniEdUsers.push(band);
+                });
+            }
+        }
+        else {
+            bands.forEach(band => {
+                uniEdUsers.push(band);
+            });
+        }
         shuffleArray(uniEdUsers);
         shuffleArray(noUniEdUsers);
         uniEdUsers.forEach(user => {

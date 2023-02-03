@@ -8,6 +8,11 @@ const User = require('../models/user');
 const Schedule = require('../models/schedule');
 const Feed = require('../models/feed');
 
+const clearImage = filePath => {
+    filePath = path.join(__dirname, '..', filePath);
+    fs.unlink(filePath, err => console.log(err));
+};
+
 exports.signup = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -117,6 +122,10 @@ exports.define = async (req, res, next) => {
         if (uniEd) user.uniEd = uniEd;
         if (genres) user.genres = genres;
         if (instruments) user.instruments = instruments;
+        user.mediaUrls.forEach(mediaUrl => {
+            clearImage(mediaUrl);
+        });
+        clearImage(user.pfpUrl);
         paths.forEach(path => {
             if (!path.includes('pfp'))
                 user.mediaUrls.push(path);
