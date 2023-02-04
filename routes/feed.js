@@ -7,10 +7,10 @@ const isAuth = require('../middleware/is-auth');
 
 const router = express.Router();
 
-router.patch('/setPref', isAuth, feedController.setPref);
+router.patch('/setPref', feedController.setPref);
 
-router.get('/getFeed', isAuth, feedController.getFeed);
+router.get('/getFeed', feedController.getFeed);
 
-router.get('/serveNext', isAuth, feedController.serveNext);
+router.get('/serveNext', feedController.serveNext);
 
 module.exports = router;

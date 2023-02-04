@@ -161,7 +161,7 @@ exports.removeMember = async (req, res, next) => {
 }
 
 exports.deleteBand = async (req, res, next) => {
-    const bandId = req.body.bandId;
+    const bandId = req.params.bandId;
     const meId = req.userId;
     try {
         const band = await Band.findById(bandId);

@@ -9,6 +9,20 @@ const Feed = require('../models/feed');
 const Band = require('../models/band');
 
 exports.setPref = async (req, res, next) => {
+    const authHeader = req.get('Authorization');
+    let token;
+    if (!authHeader) {
+        req.userId = '0';
+    } else token = authHeader.split(' ')[1];
+    let decodedToken;
+    try {
+        decodedToken = await jwt.verify(token, 'bettercallsaulgoodman');
+    } catch (err) {
+        req.userId = '0';
+    }
+    if (!decodedToken) {
+        req.userId = '0';
+    } else req.userId = decodedToken.userId;
     const pref = req.body.pref;
     const cities = req.body.cities;
     try {
@@ -77,6 +91,20 @@ const shuffleArray = array => {
 }
 
 exports.serveNext = async (req, res, next) => {
+    const authHeader = req.get('Authorization');
+    let token;
+    if (!authHeader) {
+        req.userId = '0';
+    } else token = authHeader.split(' ')[1];
+    let decodedToken;
+    try {
+        decodedToken = await jwt.verify(token, 'bettercallsaulgoodman');
+    } catch (err) {
+        req.userId = '0';
+    }
+    if (!decodedToken) {
+        req.userId = '0';
+    } else req.userId = decodedToken.userId;
     let queryUsers = [];
     try {
         const users = await User.find();

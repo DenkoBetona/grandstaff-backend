@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const Schedule = require('../models/schedule');
 const Feed = require('../models/feed');
+const Band = require('../models/band');
 
 const clearImage = filePath => {
     filePath = path.join(__dirname, '..', filePath);
@@ -272,6 +273,214 @@ exports.findMusician = async (req, res, next) => {
             region: region,
             instrument: instrument,
             queryUsers: queryUsers
+        });
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
+
+exports.findEmployer = async (req, res, next) => {
+    let name = req.query.name;
+    const region = req.query.region;
+    const instrument = req.query.instrument;
+    const genre = req.query.genre;
+    const uEdu = req.query.uEdu;
+    try {
+        if (name) {
+            if (name.includes(' ')) {
+                name = name.split(' ');
+            }
+        }
+        let users = await User.find();
+        let passQuery;
+        let queryUsers = [];
+        users.forEach(user => {
+            //console.log(user);
+            passQuery = true;
+            if (user.type !== 'Employer') passQuery = false;
+            if (name) {
+                if (Array.isArray(name)) {
+                    let tempPass = false;
+                    name.forEach(n => {
+                        if (user.firstName.toLowerCase().includes(n.toLowerCase()) 
+                                || user.lastName.toLowerCase().includes(n.toLowerCase()))
+                            tempPass = true;
+                    });
+                    if (!tempPass) passQuery = false;
+                }
+                else {
+                    if (!user.firstName.toLowerCase().includes(name.toLowerCase()) 
+                            && !user.lastName.toLowerCase().includes(name.toLowerCase())) 
+                        passQuery = false;
+                }
+            }
+            if (region) {
+                if (Array.isArray(region)) {
+                    if (!region.includes(user.city)) {
+                        console.log('failed region is array query');
+                        passQuery = false;
+                    }
+                }
+                else {
+                    if (user.city !== region) {
+                        console.log('failed region is not array query');
+                        passQuery = false;
+                    }
+                }
+            }
+            if (instrument) {
+                if (!Array.isArray(instrument)) {
+                    if (!user.instruments.includes(instrument)) {
+                        console.log('failed instrument is not array query');
+                        passQuery = false;
+                    }
+                }
+                else {
+                    let commonElement = false;
+                    instrument.forEach(inst => {
+                        user.instruments.forEach(uInst => {
+                            console.log(inst);
+                            console.log(uInst);
+                            if (uInst === inst) commonElement = true;
+                        });
+                    });
+                    if (!commonElement) {
+                        console.log('failed instrument is array query');
+                        passQuery = false;
+                    }
+                }
+            }
+            if (genre) {
+                if (!Array.isArray(genre)) {
+                    if (!user.genres.includes(genre)) {
+                        console.log('failed genre is not array query');
+                        passQuery = false;
+                    }
+                }
+                else {
+                    let commonElement = false;
+                    genre.forEach(inst => {
+                        user.genres.forEach(uInst => {
+                            console.log(inst);
+                            console.log(uInst);
+                            if (uInst === inst) commonElement = true;
+                        });
+                    });
+                    if (!commonElement) {
+                        console.log('failed instrument is array query');
+                        passQuery = false;
+                    }
+                }
+            }
+            if (uEdu === 'true') {
+                if (user.uniEd === 'Undefined') passQuery = false;
+            }
+            if (passQuery) queryUsers.push(user);
+        });
+        let uniEdUsers = [];
+        let noUniEdUsers = [];
+        queryUsers.forEach(user => {
+            if (user.uniEd === 'Undefined') noUniEdUsers.push(user);
+            else uniEdUsers.push(user);
+        });
+        queryUsers = [];
+        console.log(uniEdUsers);
+        shuffleArray(uniEdUsers);
+        shuffleArray(noUniEdUsers);
+        uniEdUsers.forEach(user => {
+            queryUsers.push(user);
+        });
+        noUniEdUsers.forEach(user => {
+            queryUsers.push(user);
+        });
+        res.status(201).json({
+            region: region,
+            instrument: instrument,
+            queryUsers: queryUsers
+        });
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
+
+exports.findBand = async (req, res, next) => {
+    let name = req.query.name;
+    const region = req.query.region;
+    const genre = req.query.genre;
+    try {
+        if (name) {
+            if (name.includes(' ')) {
+                name = name.split(' ');
+            }
+        }
+        let bands = await Band.find();
+        let passQuery;
+        let queryBands = [];
+        bands.forEach(band => {
+            //console.log(band);
+            passQuery = true;
+            if (name) {
+                if (Array.isArray(name)) {
+                    let tempPass = false;
+                    name.forEach(n => {
+                        if (band.name.toLowerCase().includes(n.toLowerCase()))
+                            tempPass = true;
+                    });
+                    if (!tempPass) passQuery = false;
+                }
+                else {
+                    if (!band.name.toLowerCase().includes(name.toLowerCase())) 
+                        passQuery = false;
+                }
+            }
+            if (region) {
+                if (Array.isArray(region)) {
+                    if (!region.includes(band.city)) {
+                        console.log('failed region is array query');
+                        passQuery = false;
+                    }
+                }
+                else {
+                    if (band.city !== region) {
+                        console.log('failed region is not array query');
+                        passQuery = false;
+                    }
+                }
+            }
+            if (genre) {
+                if (!Array.isArray(genre)) {
+                    if (!band.genres.includes(genre)) {
+                        console.log('failed genre is not array query');
+                        passQuery = false;
+                    }
+                }
+                else {
+                    let commonElement = false;
+                    genre.forEach(inst => {
+                        band.genres.forEach(uInst => {
+                            console.log(inst);
+                            console.log(uInst);
+                            if (uInst === inst) commonElement = true;
+                        });
+                    });
+                    if (!commonElement) {
+                        console.log('failed instrument is array query');
+                        passQuery = false;
+                    }
+                }
+            }
+            if (passQuery) queryBands.push(band);
+        });
+        shuffleArray(queryBands);
+        res.status(201).json({
+            region: region,
+            queryBands: queryBands
         });
     } catch (err) {
         if (!err.statusCode) {

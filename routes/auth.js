@@ -43,6 +43,10 @@ router.patch('/define', isAuth, authController.define);
 
 router.get('/findMusician', authController.findMusician);
 
+router.get('/findEmployer', authController.findEmployer);
+
+router.get('/findBand', authController.findBand);
+
 router.get('/getUser/:userId', authController.getUser);
 
 module.exports = router;
