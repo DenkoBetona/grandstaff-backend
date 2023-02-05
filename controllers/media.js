@@ -4,6 +4,10 @@ const bcrypt = require('bcryptjs');
 
 const jwt = require('jsonwebtoken');
 
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg')
+ffmpeg.setFfmpegPath(ffmpegPath);
+
 const Band = require('../models/band');
 const User = require('../models/user');
 
@@ -27,6 +31,14 @@ exports.addMedia = async (req, res, next) => {
         const user = await User.findById(req.userId);
         paths.forEach(path => {
             user.mediaUrls.push(path);
+            ffmpeg(path)
+            .seekInput('00:01')
+            .frames(1)
+            .output(path.substring(0, path.indexOf('.')) + '.png')
+            .on('end', () => {
+                res.download(path.substring(0, path.indexOf('.')) + '.png');
+            })
+            .run();
         });
         await user.save();
         res.status(201).json({

@@ -106,7 +106,7 @@ exports.define = async (req, res, next) => {
         throw error;
     }
     const type = req.body.type;
-    const description = req.body.description;
+    const desc = req.body.desc;
     const city = req.body.city;
     const hscEd = req.body.hscEd;
     const uniEd = req.body.uniEd;
@@ -117,7 +117,7 @@ exports.define = async (req, res, next) => {
     try {
         const user = await User.findById(req.userId);
         if (type) user.type = type;
-        if (description) user.description = description;
+        if (desc) user.desc = desc;
         if (city) user.city = city;
         if (hscEd) user.hscEd = hscEd;
         if (uniEd) user.uniEd = uniEd;
@@ -251,7 +251,10 @@ exports.findMusician = async (req, res, next) => {
             if (uEdu === 'true') {
                 if (user.uniEd === 'Undefined') passQuery = false;
             }
-            if (passQuery) queryUsers.push(user);
+            if (passQuery) {
+                user.pfpUrl = 'http://localhost:8080/' + user.pfpUrl;
+                queryUsers.push(user);
+            }
         });
         let uniEdUsers = [];
         let noUniEdUsers = [];
@@ -378,7 +381,10 @@ exports.findEmployer = async (req, res, next) => {
             if (uEdu === 'true') {
                 if (user.uniEd === 'Undefined') passQuery = false;
             }
-            if (passQuery) queryUsers.push(user);
+            if (passQuery) { 
+                user.pfpUrl = 'http://localhost:8080/' + user.pfpUrl;
+                queryUsers.push(user); 
+            }
         });
         let uniEdUsers = [];
         let noUniEdUsers = [];
@@ -475,7 +481,10 @@ exports.findBand = async (req, res, next) => {
                     }
                 }
             }
-            if (passQuery) queryBands.push(band);
+            if (passQuery) { 
+                band.pfpUrl = 'http://localhost:8080/' + band.pfpUrl;
+                queryBands.push(band);
+            }
         });
         shuffleArray(queryBands);
         res.status(201).json({

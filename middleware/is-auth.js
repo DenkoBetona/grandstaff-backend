@@ -5,21 +5,23 @@ module.exports = async (req, res, next) => {
   if (!authHeader) {
     const error = new Error('Not authenticated.');
     error.statusCode = 401;
-    throw error;
+    next(err);
   }
   const token = authHeader.split(' ')[1];
   let decodedToken;
   try {
-    decodedToken = jwt.verify(token, 'somesupersecretsecret');
+    decodedToken = jwt.verify(token, 'bettercallsaulgoodman');
   } catch (err) {
     err.statusCode = 500;
-    throw err;
+    next(err);
   }
   if (!decodedToken) {
     const error = new Error('Not authenticated.');
     error.statusCode = 401;
-    throw error;
+    next(error);
   }
-  req.userId = decodedToken.userId;
-  next();
+  else {
+    req.userId = decodedToken.userId;
+    next();
+  }
 };

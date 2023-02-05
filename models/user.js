@@ -22,7 +22,7 @@ const userSchema = new Schema({
         type: String,
         default: "Enjoyer"
     },
-    description: {
+    desc: {
         type: String,
         default: "An enjoyer of music"
     },
@@ -64,6 +64,13 @@ const userSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'Message'
         }
+    ],
+    previews: [
+        {
+            type: { type: String },
+            cover: { type: String },
+            source: { type: String }
+        } 
     ]
 });
 

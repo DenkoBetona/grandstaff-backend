@@ -37,6 +37,7 @@ exports.setPref = async (req, res, next) => {
         }
         if (req.userId !== '0') {
             feed.preference = pref;
+            feed.cities = cities;
             await feed.save();
             res.status(201).json({
                 message: "Feed preference set successfully!",
@@ -122,6 +123,7 @@ exports.serveNext = async (req, res, next) => {
                 if (user.type === 'Employer') passQuery = false;
             }
             if (req.userId !== '0') {
+                if (req.userId === user._id.toString()) return;
                 let tempPass = false;
                 user.genres.forEach(genre => {
                     if (me.genres.includes(genre)) tempPass = true;
@@ -139,7 +141,18 @@ exports.serveNext = async (req, res, next) => {
                 }
                 if (feed.cities && !feed.cities.includes(user.city)) passQuery = false;
             }
-            if (passQuery) queryUsers.push(user);
+            if (passQuery) {
+                user.pfpUrl = 'http://localhost:8080/' + user.pfpUrl;
+                user.previews = [];
+                user.mediaUrls.forEach(mediaUrl => {
+                    user.previews.push({
+                        type: mediaUrl.includes('mp4') ? 'video' : 'image',
+                        cover: 'http://localhost:8080/' + (mediaUrl.substring(0, mediaUrl.indexOf('.')) + '.png'),
+                        source: 'http://localhost:8080/' + mediaUrl
+                    });
+                });
+                queryUsers.push(user);
+            }
         });
         let uniEdUsers = [];
         let noUniEdUsers = [];

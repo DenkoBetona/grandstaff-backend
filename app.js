@@ -25,7 +25,9 @@ const storage = multer.diskStorage({
     filename: function(req, file, cb) {
         if (file.fieldname === 'pfpPicker')
           cb(null, 'pfp' + uuidv4() + path.extname(file.originalname));
-        else cb(null, uuidv4() + path.extname(file.originalname));
+        else { 
+          cb(null, uuidv4() + path.extname(file.originalname)); 
+        }
     }
 });
 
@@ -68,6 +70,12 @@ app.use('/messages/', messagesRoutes);
 app.use('/feed', feedRoutes);
 
 app.use((error, req, res, next) => {
+    let paths = [];  
+    if (req.files) paths = req.files.map(file => file.path.replace("\\" ,"/"));
+    paths.forEach(pathE => {
+      filePath = path.join(__dirname, pathE);
+      fs.unlink(filePath, err => console.log(err));
+    });
     console.log(error);
     const status = error.statusCode || 500;
     const message = error.message;
