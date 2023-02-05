@@ -147,7 +147,7 @@ exports.serveNext = async (req, res, next) => {
                 user.mediaUrls.forEach(mediaUrl => {
                     user.previews.push({
                         type: mediaUrl.includes('mp4') ? 'video' : 'image',
-                        cover: 'http://localhost:8080/' + (mediaUrl.substring(0, mediaUrl.indexOf('.')) + '.png'),
+                        cover: 'http://localhost:8080/' + (mediaUrl.includes('mp4') ? (mediaUrl.substring(0, mediaUrl.indexOf('.')) + '.png') : mediaUrl),
                         source: 'http://localhost:8080/' + mediaUrl
                     });
                 });
@@ -164,26 +164,26 @@ exports.serveNext = async (req, res, next) => {
             else uniEdUsers.push(user);
         });
         queryUsers = [];
-        const bands = await Band.find();
-        if (req.userId !== '0') {
-            if (feed.preference !== 'Employers') {
-                bands.forEach(band => {
-                passQuery = true;
-                let tempPass = false;
-                band.genres.forEach(genre => {
-                    if (me.genres.includes(genre)) tempPass = true;
-                });
-                if (!tempPass) passQuery = false;
-                if (feed.cities && !feed.cities.includes(band.city)) passQuery = false;
-                if (passQuery) uniEdUsers.push(band);
-                });
-            }
-        }
-        else {
-            bands.forEach(band => {
-                uniEdUsers.push(band);
-            });
-        }
+        // const bands = await Band.find();
+        // if (req.userId !== '0') {
+        //     if (feed.preference !== 'Employers') {
+        //         bands.forEach(band => {
+        //         passQuery = true;
+        //         let tempPass = false;
+        //         band.genres.forEach(genre => {
+        //             if (me.genres.includes(genre)) tempPass = true;
+        //         });
+        //         if (!tempPass) passQuery = false;
+        //         if (feed.cities && !feed.cities.includes(band.city)) passQuery = false;
+        //         if (passQuery) uniEdUsers.push(band);
+        //         });
+        //     }
+        // }
+        // else {
+        //     bands.forEach(band => {
+        //         uniEdUsers.push(band);
+        //     });
+        // }
         shuffleArray(uniEdUsers);
         shuffleArray(noUniEdUsers);
         uniEdUsers.forEach(user => {

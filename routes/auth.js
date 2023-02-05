@@ -41,9 +41,7 @@ router.post('/login', authController.login);
 
 router.patch('/define', isAuth, authController.define);
 
-router.get('/findMusician', authController.findMusician);
-
-router.get('/findEmployer', authController.findEmployer);
+router.get('/find', authController.find);
 
 router.get('/findBand', authController.findBand);
 

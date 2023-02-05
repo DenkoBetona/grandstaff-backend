@@ -83,7 +83,7 @@ exports.login = async (req, res, next) => {
                 userId: loadedUser._id.toString()
             },
             'bettercallsaulgoodman',
-            { expiresIn: '1h' }
+            { expiresIn: '24h' }
         );
         res.status(200).json({ token: token, userId: loadedUser._id.toString() });
     } catch (err) {
@@ -126,7 +126,7 @@ exports.define = async (req, res, next) => {
         user.mediaUrls.forEach(mediaUrl => {
             clearImage(mediaUrl);
         });
-        clearImage(user.pfpUrl);
+        if (user.pfpUrl.includes('-')) clearImage(user.pfpUrl);
         paths.forEach(path => {
             if (!path.includes('pfp'))
                 user.mediaUrls.push(path);
@@ -155,12 +155,13 @@ const shuffleArray = array => {
     }
 }
 
-exports.findMusician = async (req, res, next) => {
+exports.find = async (req, res, next) => {
     let name = req.query.name;
     const region = req.query.region;
     const instrument = req.query.instrument;
     const genre = req.query.genre;
     const uEdu = req.query.uEdu;
+    const type = req.query.type;
     try {
         if (name) {
             if (name.includes(' ')) {
@@ -173,7 +174,8 @@ exports.findMusician = async (req, res, next) => {
         users.forEach(user => {
             //console.log(user);
             passQuery = true;
-            if (user.type !== 'Musician') passQuery = false;
+            if (type) {if (user.type !== type) passQuery = false;}
+            else if (user.type !== 'Musician') passQuery = false;
             if (name) {
                 if (Array.isArray(name)) {
                     let tempPass = false;
@@ -254,136 +256,6 @@ exports.findMusician = async (req, res, next) => {
             if (passQuery) {
                 user.pfpUrl = 'http://localhost:8080/' + user.pfpUrl;
                 queryUsers.push(user);
-            }
-        });
-        let uniEdUsers = [];
-        let noUniEdUsers = [];
-        queryUsers.forEach(user => {
-            if (user.uniEd === 'Undefined') noUniEdUsers.push(user);
-            else uniEdUsers.push(user);
-        });
-        queryUsers = [];
-        console.log(uniEdUsers);
-        shuffleArray(uniEdUsers);
-        shuffleArray(noUniEdUsers);
-        uniEdUsers.forEach(user => {
-            queryUsers.push(user);
-        });
-        noUniEdUsers.forEach(user => {
-            queryUsers.push(user);
-        });
-        res.status(201).json({
-            region: region,
-            instrument: instrument,
-            queryUsers: queryUsers
-        });
-    } catch (err) {
-        if (!err.statusCode) {
-            err.statusCode = 500;
-        }
-        next(err);
-    }
-}
-
-exports.findEmployer = async (req, res, next) => {
-    let name = req.query.name;
-    const region = req.query.region;
-    const instrument = req.query.instrument;
-    const genre = req.query.genre;
-    const uEdu = req.query.uEdu;
-    try {
-        if (name) {
-            if (name.includes(' ')) {
-                name = name.split(' ');
-            }
-        }
-        let users = await User.find();
-        let passQuery;
-        let queryUsers = [];
-        users.forEach(user => {
-            //console.log(user);
-            passQuery = true;
-            if (user.type !== 'Employer') passQuery = false;
-            if (name) {
-                if (Array.isArray(name)) {
-                    let tempPass = false;
-                    name.forEach(n => {
-                        if (user.firstName.toLowerCase().includes(n.toLowerCase()) 
-                                || user.lastName.toLowerCase().includes(n.toLowerCase()))
-                            tempPass = true;
-                    });
-                    if (!tempPass) passQuery = false;
-                }
-                else {
-                    if (!user.firstName.toLowerCase().includes(name.toLowerCase()) 
-                            && !user.lastName.toLowerCase().includes(name.toLowerCase())) 
-                        passQuery = false;
-                }
-            }
-            if (region) {
-                if (Array.isArray(region)) {
-                    if (!region.includes(user.city)) {
-                        console.log('failed region is array query');
-                        passQuery = false;
-                    }
-                }
-                else {
-                    if (user.city !== region) {
-                        console.log('failed region is not array query');
-                        passQuery = false;
-                    }
-                }
-            }
-            if (instrument) {
-                if (!Array.isArray(instrument)) {
-                    if (!user.instruments.includes(instrument)) {
-                        console.log('failed instrument is not array query');
-                        passQuery = false;
-                    }
-                }
-                else {
-                    let commonElement = false;
-                    instrument.forEach(inst => {
-                        user.instruments.forEach(uInst => {
-                            console.log(inst);
-                            console.log(uInst);
-                            if (uInst === inst) commonElement = true;
-                        });
-                    });
-                    if (!commonElement) {
-                        console.log('failed instrument is array query');
-                        passQuery = false;
-                    }
-                }
-            }
-            if (genre) {
-                if (!Array.isArray(genre)) {
-                    if (!user.genres.includes(genre)) {
-                        console.log('failed genre is not array query');
-                        passQuery = false;
-                    }
-                }
-                else {
-                    let commonElement = false;
-                    genre.forEach(inst => {
-                        user.genres.forEach(uInst => {
-                            console.log(inst);
-                            console.log(uInst);
-                            if (uInst === inst) commonElement = true;
-                        });
-                    });
-                    if (!commonElement) {
-                        console.log('failed instrument is array query');
-                        passQuery = false;
-                    }
-                }
-            }
-            if (uEdu === 'true') {
-                if (user.uniEd === 'Undefined') passQuery = false;
-            }
-            if (passQuery) { 
-                user.pfpUrl = 'http://localhost:8080/' + user.pfpUrl;
-                queryUsers.push(user); 
             }
         });
         let uniEdUsers = [];
@@ -507,6 +379,15 @@ exports.getUser = async (req, res, next) => {
             error.statusCode = 404;
             throw error;
         }
+        user.pfpUrl = 'http://localhost:8080/' + user.pfpUrl;
+        user.previews = [];
+        user.mediaUrls.forEach(mediaUrl => {
+            user.previews.push({
+                type: (mediaUrl.includes('mp4') ? 'video' : 'image'),
+                cover: 'http://localhost:8080/' + (mediaUrl.substring(0, mediaUrl.indexOf('.')) + '.png'),
+                source: 'http://localhost:8080/' + mediaUrl
+            });
+        });
         res.status(200).json({
             user: user
         });

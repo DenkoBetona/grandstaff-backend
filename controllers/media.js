@@ -14,6 +14,11 @@ const User = require('../models/user');
 const path = require('path');
 const fs = require('fs');
 
+const clearImage = filePath => {
+    filePath = path.join(__dirname, '..', filePath);
+    fs.unlink(filePath, err => console.log(err));
+};
+
 exports.addMedia = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -30,15 +35,20 @@ exports.addMedia = async (req, res, next) => {
     try {
         const user = await User.findById(req.userId);
         paths.forEach(path => {
-            user.mediaUrls.push(path);
-            ffmpeg(path)
-            .seekInput('00:01')
-            .frames(1)
-            .output(path.substring(0, path.indexOf('.')) + '.png')
-            .on('end', () => {
-                res.download(path.substring(0, path.indexOf('.')) + '.png');
-            })
-            .run();
+            if (!path.includes('pfp')) {
+                user.mediaUrls.push(path);
+                ffmpeg(path)
+                .seekInput('00:01')
+                .frames(1)
+                .output(path.substring(0, path.indexOf('.')) + '.png')
+                .run();
+            }
+            else {
+                if (user.pfpUrl.includes('-')) {
+                    clearImage(user.pfpUrl);
+                }
+                user.pfpUrl = path;
+            }
         });
         await user.save();
         res.status(201).json({
@@ -93,8 +103,3 @@ exports.getMedia = async (req, res, next) => {
         next(err);
     }
 }
-
-const clearImage = filePath => {
-    filePath = path.join(__dirname, '..', filePath);
-    fs.unlink(filePath, err => console.log(err));
-};
