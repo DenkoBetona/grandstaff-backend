@@ -16,17 +16,18 @@ const clearImage = filePath => {
 
 exports.signup = async (req, res, next) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        const error = new Error('Validation failed.');
-        error.statusCode = 422;
-        error.data = errors.array();
-        throw error;
-    }
     const email = req.body.email;
     const password = req.body.password;
     const firstName = req.body.firstName;
     const lastName = req.body.lastName;
     try {
+        if (!errors.isEmpty()) {
+            const error = new Error('Validation failed.');
+            error.statusCode = 422;
+            error.data = errors.array();
+            throw error;
+        }
+
         const hashedPw = await bcrypt.hash(password, 12);
         
         const user = new User({
@@ -384,7 +385,7 @@ exports.getUser = async (req, res, next) => {
         user.mediaUrls.forEach(mediaUrl => {
             user.previews.push({
                 type: (mediaUrl.includes('mp4') ? 'video' : 'image'),
-                cover: 'http://localhost:8080/' + (mediaUrl.substring(0, mediaUrl.indexOf('.')) + '.png'),
+                cover: 'http://localhost:8080/' + (mediaUrl.substring(0, mediaUrl.indexOf('.')) + (mediaUrl.includes('.mp4') ? '.png' : mediaUrl.substring(mediaUrl.indexOf('.')))),
                 source: 'http://localhost:8080/' + mediaUrl
             });
         });

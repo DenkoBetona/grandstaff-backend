@@ -31,17 +31,38 @@ exports.addMedia = async (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
+
+    const token = req.params.userToken;
+    let userId = 0;
+    let decodedToken;
+    try {
+      decodedToken = jwt.verify(token, 'bettercallsaulgoodman');
+    } catch (err) {
+      err.statusCode = 500;
+      next(err);
+    }
+    if (!decodedToken) {
+      const error = new Error('Not authenticated.');
+      error.statusCode = 401;
+      next(error);
+    }
+    else {
+      userId = decodedToken.userId;
+    }
+    
     const paths = req.files.map(file => file.path.replace("\\" ,"/"));
     try {
-        const user = await User.findById(req.userId);
+        const user = await User.findById(userId);
         paths.forEach(path => {
             if (!path.includes('pfp')) {
                 user.mediaUrls.push(path);
-                ffmpeg(path)
-                .seekInput('00:01')
-                .frames(1)
-                .output(path.substring(0, path.indexOf('.')) + '.png')
-                .run();
+                if (path.includes('.mp4')) {
+                    ffmpeg(path)
+                    .seekInput('00:01')
+                    .frames(1)
+                    .output(path.substring(0, path.indexOf('.')) + '.png')
+                    .run();
+                }
             }
             else {
                 if (user.pfpUrl.includes('-')) {
@@ -70,14 +91,49 @@ exports.removeMedia = async (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
-    const path = "images/" + req.params.fileNameExt;
+    const path = "images/" + req.params.fileName;
+
+    const token = req.params.userToken;
+    let userId = 0;
+    let decodedToken;
     try {
-        const user = await User.findById(req.userId);
+      decodedToken = jwt.verify(token, 'bettercallsaulgoodman');
+    } catch (err) {
+      err.statusCode = 500;
+      next(err);
+    }
+    if (!decodedToken) {
+      const error = new Error('Not authenticated.');
+      error.statusCode = 401;
+      next(error);
+    }
+    else {
+      userId = decodedToken.userId;
+    }
+
+    try {
+        const user = await User.findById(userId);
+        path.concat('.mp4')
+        if (user.mediaUrls.includes(path)){
+            user.mediaUrls.splice(user.mediaUrls.indexOf(path), 1);
+        }
+        path.concat('.png')
+        if (user.mediaUrls.includes(path)){
+            user.mediaUrls.splice(user.mediaUrls.indexOf(path), 1);
+        }
+        path.concat('.jpg')
+        if (user.mediaUrls.includes(path)){
+            user.mediaUrls.splice(user.mediaUrls.indexOf(path), 1);
+        }
+        path.concat('.jpeg')
         if (user.mediaUrls.includes(path)){
             user.mediaUrls.splice(user.mediaUrls.indexOf(path), 1);
         }
         await user.save();
         clearImage(path);
+        clearImage(path.substring(0, path.indexOf('.')) + '.png');
+        clearImage(path.substring(0, path.indexOf('.')) + '.jpg');
+        clearImage(path.substring(0, path.indexOf('.')) + '.jpeg');
         res.status(201).json({
             message: "File removed from user successfully!",
             user: user

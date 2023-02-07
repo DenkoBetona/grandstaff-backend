@@ -5,7 +5,7 @@ module.exports = async (req, res, next) => {
   if (!authHeader) {
     const error = new Error('Not authenticated.');
     error.statusCode = 401;
-    next(err);
+    next(error);
   }
   const token = authHeader.split(' ')[1];
   let decodedToken;

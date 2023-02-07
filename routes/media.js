@@ -7,9 +7,9 @@ const isAuth = require('../middleware/is-auth');
 
 const router = express.Router();
 
-router.put('/addMedia', isAuth, mediaController.addMedia);
+router.post('/addMedia/:userToken', mediaController.addMedia);
 
-router.delete('/removeMedia/:fileNameExt', isAuth, mediaController.removeMedia);
+router.delete('/removeMedia/:fileName/:userToken', mediaController.removeMedia);
 
 router.get('/getMedia', isAuth, mediaController.getMedia);
 

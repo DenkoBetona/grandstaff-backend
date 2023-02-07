@@ -93,37 +93,47 @@ const shuffleArray = array => {
 
 exports.serveNext = async (req, res, next) => {
     const authHeader = req.get('Authorization');
+    let userId = '0';
     let token;
     if (!authHeader) {
-        req.userId = '0';
+        userId = '0';
     } else token = authHeader.split(' ')[1];
     let decodedToken;
     try {
         decodedToken = await jwt.verify(token, 'bettercallsaulgoodman');
     } catch (err) {
-        req.userId = '0';
+        userId = '0';
     }
     if (!decodedToken) {
-        req.userId = '0';
-    } else req.userId = decodedToken.userId;
+        userId = '0';
+    } else userId = decodedToken.userId;
     let queryUsers = [];
     try {
         const users = await User.find();
         let passQuery;
         let queryUsers = [];
         let me, feed;
-        if (req.userId !== '0') {
-            me = await User.findById(req.userId);
-            feed = await Feed.findOne({belongsTo: req.userId});
+        if (userId !== '0') {
+            me = await User.findById(userId);
+            console.log(me);
+            feed = await Feed.findOne({belongsTo: userId});
+            console.log(feed);
+            if (!feed) {
+                const feed = new Feed({
+                    preference: 'Musicians',
+                    belongsTo: me._id
+                });
+                await feed.save();
+            }
         }
         users.forEach(async user => {
             passQuery = true;
             if (user.type === 'Undefined' || user.type === 'Enjoyer') return;
-            if (req.userId === '0') {
+            if (userId === '0') {
                 if (user.type === 'Employer') passQuery = false;
             }
-            if (req.userId !== '0') {
-                if (req.userId === user._id.toString()) return;
+            if (userId !== '0' && me.type !== 'Undefined' && me.type !== 'Enjoyer') {
+                if (userId === user._id.toString()) return;
                 let tempPass = false;
                 user.genres.forEach(genre => {
                     if (me.genres.includes(genre)) tempPass = true;
